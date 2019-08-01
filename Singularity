@@ -1,9 +1,12 @@
 # Header
-Bootstrap: shub
-From: wsjeon/singularity-development-setting:zsh
+Bootstrap: docker
+From: tensorflow/tensorflow:nightly-gpu-py3
 
 # Section
 %post
+    # Git
+    apt-get install -y git
+
     # Ray rllib
     apt-get install -y libxrender1
     pip install --progress-bar off psutil
@@ -20,11 +23,9 @@ From: wsjeon/singularity-development-setting:zsh
     pip install --progress-bar off pandas
     pip install --progress-bar off setproctitle
     pip install --progress-bar off box2d-py
-    pip install --progress-bar off click
-    pip install --progress-bar off matplotlib
 
 %environment
-    export SHELL=/bin/zsh
+    export SHELL=/bin/bash
 
 %runscript
-    exec /bin/zsh "$@"
+    exec /bin/bash "$@"
