@@ -10,6 +10,23 @@ import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 
+class CustomStdOut(object):
+    def _log_result(self, result):
+        if result["training_iteration"] % 50 == 0:
+            try:
+                print("steps: {}, episodes: {}, mean episode reward: {}, agent episode reward: {}, time: {}".format(
+                    result["timesteps_total"],
+                    result["episodes_total"],
+                    result["episode_reward_mean"],
+                    result["policy_reward_mean"],
+                    round(result["time_total_s"] - self.cur_time, 3)
+                ))
+            except:
+                pass
+
+            self.cur_time = result["time_total_s"]
+
+
 def parse_args():
     parser = argparse.ArgumentParser("MADDPG with OpenAI MPE")
 
@@ -63,7 +80,10 @@ def parse_args():
 
 def main(args):
     ray.init(redis_max_memory=int(1e10), object_store_memory=int(3e9))
-    register_trainable("MADDPG", maddpg.MADDPGTrainer)
+    MADDPGAgent = maddpg.MADDPGTrainer.with_updates(
+        mixins=[CustomStdOut]
+    )
+    register_trainable("MADDPG", MADDPGAgent)
 
     def env_creater(mpe_args):
         return MultiAgentParticleEnv(**mpe_args)
@@ -105,9 +125,6 @@ def main(args):
             "local_dir": args.local_dir,
             "restore": args.restore,
             "config": {
-                "good_policy": args.good_policy,
-                "adv_policy": args.adv_policy,
-
                 # === Log ===
                 "log_level": "ERROR",
 
@@ -120,6 +137,8 @@ def main(args):
 
                 # === Policy Config ===
                 # --- Model ---
+                "good_policy": args.good_policy,
+                "adv_policy": args.adv_policy,
                 "actor_hiddens": [args.num_units] * 2,
                 "actor_hidden_activation": "relu",
                 "critic_hiddens": [args.num_units] * 2,
