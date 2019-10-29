@@ -52,7 +52,7 @@ def parse_args():
                         help="learning rate for Adam optimizer")
     parser.add_argument("--gamma", type=float, default=0.95,
                         help="discount factor")
-    # NOTE: 1 iteration = sample_batch_size * num_workers timesteps
+    # NOTE: 1 iteration = sample_batch_size * num_workers timesteps * num_envs_per_worker
     parser.add_argument("--sample-batch-size", type=int, default=25,
                         help="number of data points sampled /update /worker")
     parser.add_argument("--train-batch-size", type=int, default=1024,
